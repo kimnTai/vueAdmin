@@ -2,7 +2,7 @@ import axios from 'axios'
 import router from "@/router";
 
 const request = axios.create({
-    // baseURL: "http://localhost:9090",
+    baseURL: "/api",
     timeout: 5000
 })
 
@@ -21,7 +21,7 @@ request.interceptors.request.use(config => {
         // 取出sessionStorage裡面緩存的用戶信息
         let userJson = sessionStorage.getItem("user")
         if (!userJson) {
-            // router.push("/login")
+            router.push("/login")
         }
     }
     return config

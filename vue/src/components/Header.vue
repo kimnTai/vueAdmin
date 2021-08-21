@@ -1,15 +1,15 @@
 <template>
   <div class="k-header">
-    <div class="k-header-1">後台管理</div>
+    <div class="k-header-1 fs-3">後台管理</div>
     <div class="k-header-2"></div>
     <div class="k-header-3">
       <el-dropdown>
         <span class="el-dropdown-link">
-          使用者名稱<i class="el-icon-arrow-down el-icon--right"></i>
+           {{user.username}} <i class="el-icon-arrow-down el-icon--right"></i>
         </span>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item>個人資料</el-dropdown-item>
+            <el-dropdown-item @click="$router.push('/person')">個人資料</el-dropdown-item>
             <el-dropdown-item @click="$router.push('/login')">退出</el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -22,7 +22,16 @@
 
 <script>
 export default {
-  name: "Header.vue"
+  name: "Header.vue",
+  data() {
+    return {
+      user: {}
+    }
+  },
+  created() {
+    let str = sessionStorage.getItem("user") || "{}"
+    this.user = JSON.parse(str)
+  }
 }
 </script>
 
@@ -55,8 +64,9 @@ export default {
   cursor: pointer;
   color: #409EFF;
 }
+
 .el-icon-arrow-down {
-  font-size: 12px;
+  font-size: 20px;
 }
 
 

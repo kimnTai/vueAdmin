@@ -24,6 +24,7 @@ public class UserController {
     @Resource
     UserMapper userMapper;
 
+    // 新增
     @PostMapping
     public Result<?> save(@RequestBody User user) {
         // 需要定義 前端回傳的 JSON - > entity
@@ -38,6 +39,7 @@ public class UserController {
 
     }
 
+    // 登入
     @PostMapping("/login")
     public Result<?> login(@RequestBody User user) {
         User res = userMapper.selectOne(
@@ -48,10 +50,26 @@ public class UserController {
             return Result.error("-1", "用戶名或密碼錯誤");
         }
 
+        return Result.success(res);
+    }
+
+    // 註冊
+    @PostMapping("/register")
+    public Result<?> register(@RequestBody User user) {
+        User res = userMapper.selectOne(
+                Wrappers.<User>lambdaQuery()
+                        .eq(User::getUsername, user.getUsername()));
+        if (res != null) {
+            return Result.error("-1", "用戶名重複");
+        }
+        if (user.getPassword() == null) {
+            user.setPassword("123456");
+        }
+        userMapper.insert(user);
         return Result.success();
     }
 
-
+    // 修改
     @PutMapping
     public Result<?> update(@RequestBody User user) {
         userMapper.updateById(user);
@@ -59,6 +77,7 @@ public class UserController {
 
     }
 
+    // 刪除
     @DeleteMapping("/{id}")
     public Result<?> delete(@PathVariable Long id) {
         // {} 要用 PathVariable
@@ -67,6 +86,7 @@ public class UserController {
 
     }
 
+    // 分頁查詢
     @GetMapping
     public Result<?> findPage(@RequestParam(defaultValue = "1") Integer pageNum,
                               @RequestParam(defaultValue = "10") Integer pageSize,
@@ -79,9 +99,7 @@ public class UserController {
             // 避免 search 是 null
         }
         Page<User> userPage = userMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
-
         return Result.success(userPage);
-
 
     }
 

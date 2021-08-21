@@ -7,19 +7,34 @@ const routes = [
         path: '/',
         name: 'Layout',
         component: Layout,
-        redirect: "/home",
+        redirect: "/user",
         children: [
             {
-                path: '/home',
-                name: 'Home',
-                component: () => import("@/views/Home"),
-            }
+                path: 'user',
+                name: 'User',
+                component: () => import("@/views/User"),
+            },
+            {
+                path: 'book',
+                name: 'Book',
+                component: () => import("@/views/Book"),
+            },
+            {
+                path: 'person',
+                name: 'Person',
+                component: () => import("@/views/Person"),
+            },
         ]
     },
     {
         path: '/login',
         name: 'Login',
         component: () => import("@/views/Login")
+    },
+    {
+        path: '/register',
+        name: 'Register',
+        component: () => import("@/views/Register")
     },
 ]
 

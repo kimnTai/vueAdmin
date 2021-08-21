@@ -17,7 +17,7 @@ export default {
 </script>
 
 <style >
-/*@import "../node_modules/bootstrap/scss/bootstrap";*/
+/*@import "~bootstrap/scss/bootstrap.scss";*/
 </style>
 
 
