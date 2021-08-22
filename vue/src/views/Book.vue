@@ -3,8 +3,8 @@
   <div class="home bg-secondary">
     <!-- 功能區域 -->
     <!--    <Loading :active="isLoading"></Loading>-->
-    <div>
-      <el-button class="btn btn-primary" @click="add">新增</el-button>
+    <div >
+      <el-button class="btn btn-primary" @click="add" v-if="user.role === 1">新增</el-button>
       <el-button class="btn btn-primary">導入</el-button>
       <el-button class="btn btn-primary">導出</el-button>
 
@@ -54,8 +54,8 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="操作">
-        <template #default="scope">
+      <el-table-column label="操作" v-if="user.role === 1">
+        <template #default="scope" >
           <el-button class="btn btn-secondary" size="mini" @click="handleEdit(scope.row)">編輯</el-button>
           <el-popconfirm title="確定刪除嗎？" @confirm="handleDelete(scope.row.id)">
             <template #reference>
@@ -137,6 +137,14 @@ export default {
   },
   created() {
     this.load()
+    let userStr = sessionStorage.getItem("user") || "{}"
+    this.user = JSON.parse(userStr)
+    // 請求服務端，確認當前登錄用戶的 合法信息
+    request.get("/user/" + this.user.id).then(res => {
+      if (res.code === '0') {
+        this.user = res.data
+      }
+    })
   },
   methods: {
     filesUploadSuccess(res) {

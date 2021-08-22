@@ -86,6 +86,19 @@ public class UserController {
 
     }
 
+    // 單筆查詢
+    @GetMapping("/{id}")
+    public Result<?> getById(@PathVariable Long id) {
+        return Result.success(userMapper.selectById(id));
+    }
+
+    // 查詢全部
+    @GetMapping("/all")
+    public Result<?> findAll() {
+        return Result.success(userMapper.selectList(null));
+    }
+
+
     // 分頁查詢
     @GetMapping
     public Result<?> findPage(@RequestParam(defaultValue = "1") Integer pageNum,

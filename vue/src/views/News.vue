@@ -28,36 +28,21 @@
           sortable>
       </el-table-column>
       <el-table-column
-          prop="username"
-          label="用戶名">
-      </el-table-column>
-      <!--資料庫 nick_name 前台自動轉駝峰，mybaitPlus做的-->
-      <el-table-column
-          prop="nickName"
-          label="暱稱">
+          prop="title"
+          label="標題">
       </el-table-column>
       <el-table-column
-          prop="age"
-          label="年齡">
+          prop="author"
+          label="作者">
       </el-table-column>
       <el-table-column
-          prop="sex"
-          label="性別">
-      </el-table-column>
-      <el-table-column
-          prop="address"
-          label="地址">
-      </el-table-column>
-      <el-table-column
-          label="角色">
-        <template #default="scope">
-          <span v-if="scope.row.role === 1">管理員</span>
-          <span v-else>普通用戶</span>
-        </template>
+          prop="time"
+          label="時間">
       </el-table-column>
 
       <el-table-column label="操作">
         <template #default="scope">
+          <el-button class="btn btn-info" size="mini" @click="details(scope.row)">詳情</el-button>
           <el-button class="btn btn-secondary" size="mini" @click="handleEdit(scope.row)">編輯</el-button>
           <el-popconfirm title="確定刪除嗎？" @confirm="handleDelete(scope.row.id)">
             <template #reference>
@@ -82,26 +67,12 @@
           :total="total">
       </el-pagination>
       <!--新增-->
-      <el-dialog title="提示" v-model="dialogVisible" width="30%">
+      <el-dialog title="提示" v-model="dialogVisible" width="50%">
         <el-form :model="form" label-width="120px">
-          <el-form-item label="用戶名">
-            <el-input v-model="form.username" style="width: 80%"></el-input>
+          <el-form-item label="標題">
+            <el-input v-model="form.title" style="width: 50%"></el-input>
           </el-form-item>
-          <el-form-item label="暱稱">
-            <el-input v-model="form.nickName" style="width: 80%"></el-input>
-          </el-form-item>
-          <el-form-item label="年齡">
-            <el-input v-model="form.age" style="width: 80%"></el-input>
-          </el-form-item>
-          <el-form-item label="性別">
-            <el-radio v-model="form.sex" label="男">男</el-radio>
-            <el-radio v-model="form.sex" label="女">女</el-radio>
-            <el-radio v-model="form.sex" label="未知">未知</el-radio>
-          </el-form-item>
-          <el-form-item label="地址">
-            <el-input type="textarea" v-model="form.address" style="width: 80%"></el-input>
-          </el-form-item>
-
+          <div id="div1"></div>
         </el-form>
         <template #footer>
           <span class="dialog-footer">
@@ -110,7 +81,12 @@
           </span>
         </template>
       </el-dialog>
-
+      <!--詳情-->
+      <el-dialog title="提示" v-model="vis" width="50%">
+        <el-card>
+          <div v-html="detail.content" style="min-height: 150px"></div>
+        </el-card>
+      </el-dialog>
 
     </div>
   </div>
@@ -118,11 +94,13 @@
 
 <script>
 
-
+import E from "wangeditor"
 import request from "../utils/request";
 
+let editor;
+
 export default {
-  name: 'Home',
+  name: 'News',
   components: {},
   data() {
     return {
@@ -133,16 +111,26 @@ export default {
       currentPage: 1,
       pageSize: 10,
       total: 0,
-      tableData: []
+      tableData: [],
+      vis: false,
+      detail: {},
     }
   },
   created() {
     this.load()
   },
   methods: {
+    details(row) {
+      this.detail = row;
+      this.vis = true;
+    },
+    filesUploadSuccess(res) {
+      console.log(res)
+      this.form.cover = res.data
+    },
     load() {
       this.isLoading = true;
-      request.get("/user", {
+      request.get("/news", {
         params: {
           pageNum: this.currentPage,
           pageSize: this.pageSize,
@@ -159,10 +147,24 @@ export default {
     add() {
       this.dialogVisible = true
       this.form = {}  // 先清空表單
+
+      this.$nextTick(() => {
+        if (!editor) {
+          editor = new E('#div1')
+
+          // 配置 server 接口地址
+          editor.config.uploadImgServer = 'http://localhost:9090/files/editor/upload'
+          editor.config.uploadFileName = "file"  // 设置上传参数名称
+          editor.create()
+        }
+      })
+
     },
     save() {
+      this.form.content = editor.txt.html();  // 獲取編輯器裡面的值，然後賦值到實體
+
       if (this.form.id) {   // 如果 form 有 id  => 更新
-        request.put("/user", this.form).then(res => {
+        request.put("/news", this.form).then(res => {
           console.log(res)
           if (res.code === '0') {
             this.$message({
@@ -178,8 +180,11 @@ export default {
         })
         this.load()                 // 刷新表格數據
         this.dialogVisible = false  // 關閉彈窗
-      } else {                      // 新增
-        request.post("/user", this.form).then(res => {
+      } else {   // 新增
+        let userStr = sessionStorage.getItem("user") || "{}"
+        let user = JSON.parse(userStr)
+        this.form.author = user.nickName
+        request.post("/news", this.form).then(res => {
           console.log(res)
           this.$message({
             type: "success",
@@ -194,6 +199,19 @@ export default {
     handleEdit(row) {
       this.form = {...row}
       this.dialogVisible = true
+      this.$nextTick(() => {
+        // 關聯彈窗內的 div，new一個 editor 物件
+        if (!editor) {
+          editor = new E('#div1')
+
+          // 配置 server 接口地址
+          editor.config.uploadImgServer = 'http://localhost:9090/files/editor/upload'
+          editor.config.uploadFileName = "file"  // 設置上傳參數名稱
+          editor.create()
+        }
+
+        editor.txt.html(row.content)
+      })
     },
     handleSizeChange(pageSize) {
       // 改變當前頁面個數
@@ -207,7 +225,7 @@ export default {
     },
     handleDelete(id) {
       console.log(id)
-      request.delete("/user/" + id).then(res => {
+      request.delete("/news/" + id).then(res => {
         if (res.code === '0') {
           this.$message({
             type: "success",

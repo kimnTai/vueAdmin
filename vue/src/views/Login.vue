@@ -11,7 +11,7 @@
           </el-form-item>
           <el-form-item class="mb-2" prop="password">
             <label class="sr-only">密碼</label>
-            <el-input prefix-icon="el-icon-lock" v-model="form.password" show-password></el-input>
+            <el-input prefix-icon="el-icon-lock" v-model="form.password" @keyup.enter="login" show-password></el-input>
           </el-form-item>
           <el-form-item class="text-end mt-4">
             <el-button class="btn btn-lg btn-primary btn-block" @click="login">登入</el-button>

@@ -7,7 +7,7 @@ const routes = [
         path: '/',
         name: 'Layout',
         component: Layout,
-        redirect: "/user",
+        redirect: "/book",
         children: [
             {
                 path: 'user',
@@ -20,11 +20,21 @@ const routes = [
                 component: () => import("@/views/Book"),
             },
             {
+                path: 'news',
+                name: 'News',
+                component: () => import("@/views/News"),
+            },
+            {
                 path: 'person',
                 name: 'Person',
                 component: () => import("@/views/Person"),
             },
         ]
+    },
+    {
+        path: '/about',
+        name: 'about',
+        component: () => import("@/views/User")
     },
     {
         path: '/login',
@@ -41,6 +51,26 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(process.env.BASE_URL),
     routes
+})
+
+// 限制某些页面禁止未登录访问
+let limitPagePath = ['/about']
+
+router.beforeEach((to, from, next) => {
+    if (limitPagePath.includes(to.path)) {
+        // 判斷sessionStorage是否保存了用戶信息
+        let userStr = sessionStorage.getItem("user") || "{}"
+        let user = JSON.parse(userStr)
+        if (!user.id) {
+            // 跳轉到登錄頁面
+            next({path: "/login"})
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
+
 })
 
 export default router

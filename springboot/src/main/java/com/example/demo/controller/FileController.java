@@ -4,6 +4,9 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSON;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
 import com.example.demo.common.Result;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +49,35 @@ public class FileController {
         return Result.success(ip + ":" + port + "/files/" + flag);    // 返回結果 url
 
     }
+
+    /**
+     * 富文本文件上传接口
+     *
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    @PostMapping("/editor/upload")
+    public JSON editorUpload(MultipartFile file) throws IOException {
+        String originalFilename = file.getOriginalFilename();    // 獲取傳來的檔案名稱
+        String flag = IdUtil.fastSimpleUUID();                  // 定義文件的唯一標示 (前綴)
+        String rootFilePath = System.getProperty("user.dir")    // 獲取Filej文件夾路徑
+                + "/springboot/src/main/resources/files/"
+                + flag + "_" + originalFilename;
+        FileUtil.writeBytes(file.getBytes(), rootFilePath);     // 透過 hutool 工具類 寫入檔案 (記得 要拋出異常)
+
+
+        String url = ip + ":" + port + "/files/" + flag;
+        JSONObject json = new JSONObject();
+        json.set("errno", 0);
+        JSONArray arr = new JSONArray();
+        JSONObject data = new JSONObject();
+        arr.add(data);
+        data.set("url", url);
+        json.set("data", arr);
+        return json;  // 返回结果 url
+    }
+
 
     /**
      * 下載接口
